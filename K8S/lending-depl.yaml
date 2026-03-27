@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lending-depl
+spec:
+  selector:
+    matchLabels:
+      name: lendingservice
+  template:
+    metadata:
+      labels:
+        name: lendingservice
+    spec:
+      containers:
+        - name: lendingservice
+          image: mateusabelli/lendingservice
+          imagePullPolicy: Never
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lending-clusterip-srv
+spec:
+  type: ClusterIP
+  selector:
+    name: lendingservice
+  ports:
+    - name: lendingservice
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+      

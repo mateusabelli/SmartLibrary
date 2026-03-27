@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mssql
+spec:
+  clusterIP: None
+  selector:
+    name: mssql
+  ports:
+    - name: tcpsql
+      port: 1433
+      targetPort: 1433
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mssql-lb
+spec:
+  type: LoadBalancer
+  selector:
+    name: mssql
+  ports:
+    - protocol: TCP
+      port: 1433
+      targetPort: 1433

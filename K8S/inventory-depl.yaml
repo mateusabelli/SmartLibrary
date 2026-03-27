@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-depl
+spec:
+  selector:
+    matchLabels:
+      name: inventoryservice
+  template:
+    metadata:
+      labels:
+        name: inventoryservice
+    spec:
+      containers:
+        - name: inventoryservice
+          image: mateusabelli/inventoryservice
+          imagePullPolicy: Never
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-clusterip-srv
+spec:
+  type: ClusterIP
+  selector:
+    name: inventoryservice
+  ports:
+    - name: inventoryservice
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+      

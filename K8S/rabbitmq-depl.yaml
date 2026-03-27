@@ -1,0 +1,22 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: rabbitmq-depl
+spec:
+  replicas: 1
+  service:
+    type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-lb
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: rabbitmq-depl
+  ports:
+    - port: 8124
+      targetPort: 15672
+      protocol: TCP
