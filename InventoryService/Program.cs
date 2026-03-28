@@ -10,6 +10,7 @@ builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddSingleton<IMessageBusClient, MessageBusClient>();
 builder.Services.AddHostedService<MessageBusWorker>();
 builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
+builder.Services.AddGrpc();
 
 if (builder.Environment.IsProduction())
     builder.Services.AddDbContext<AppDbContext>(opt =>
@@ -26,5 +27,6 @@ if (app.Environment.IsDevelopment())
 }
 
 PrepDb.PrepPopulation(app, builder.Environment.IsProduction());
+app.MapGrpcService<GrpcInventoryService>();
 app.MapControllers();
 app.Run();
