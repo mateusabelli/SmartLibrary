@@ -10,7 +10,9 @@ namespace LendingService.Controllers;
 [Route("/api/[controller]")]
 public class LendingController(
     IMessageBusClient messageBusClient,
-    ILendingRepository lendingRepository) : ControllerBase
+    ILendingRepository lendingRepository,
+    IDataClient dataClient
+    ) : ControllerBase
 {
     private readonly LendMapper _lendMapper = new();
 
@@ -29,6 +31,13 @@ public class LendingController(
     public async Task<ActionResult<LendReadDto>> CreateLend(LendCreateDto createDto)
     {
         var lend = _lendMapper.MapFromCreateDto(createDto);
+
+        var inventoryStock = dataClient.CheckStock(createDto.BookId);
+
+        if (inventoryStock is not { Stock: > 0 })
+        {
+            return Ok("This book is out of stock");
+        }
 
         lendingRepository.CreateLend(lend);
         lendingRepository.SaveChanges();

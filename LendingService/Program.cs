@@ -12,6 +12,7 @@ builder.Services.AddScoped<IBookRepository, BookRepository>();
 builder.Services.AddSingleton<IMessageBusClient, MessageBusClient>();
 builder.Services.AddHostedService<MessageBusWorker>();
 builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
+builder.Services.AddScoped<IDataClient, DataClient>();
 
 var app = builder.Build();
 
