@@ -13,6 +13,9 @@ A library distributed system built with microservices for book management and le
     - [Key Services](#key-services) (TODO)
 - [Tech Stack](#tech-stack) (TODO)
 - [Development](#development)
+  - [Initial Setup](#initial-setup)
+  - [Applying Manifests](#applying-manifests)
+  - [Running Locally](#running-locally)
 - [How to Contribute](#how-to-contribute)
 - [License](#license)
 
@@ -46,6 +49,8 @@ Prerequisites:
 - docker
 - kubectl
 - minikube
+
+### Initial setup
 
 After you've started the Kubernetes cluster in Minikube, proceed with the following steps:
 
@@ -88,20 +93,24 @@ echo "password: $password"
 
 With that generated username and password, update the `appsettings.Production.json` in InventoryService and LendingService
 
-Apply all the manifests in the "K8S" folder
+### Applying manifests
+
+Run the following command to apply all the manifests in the "K8S" folder
 ```bash
 kubectl apply -f K8S
 ```
 
 This will do the following operations (not in the same order):
 
->!NOTE
-> run `kubectl get all` to check if any service is `0/1`, if so, it might be needed to restart them.
-
 - Create the Gateway with Envoy mapped to the Pods Cluster Ips
 - Create the Pod with Cluster IP for the InventoryService and LendingService
 - Create MSSQL Database with its own LoadBalancer for external access
 - Create the RabbitMQ Deployment
+ 
+> [!NOTE]
+> run `kubectl get all` to check if any service is `0/1`, if so, it might be needed to restart them.
+
+### Running locally
 
 Using an API client such as Insomnia or Postman. Try to run the following operations to check if everything is running okay.
 
