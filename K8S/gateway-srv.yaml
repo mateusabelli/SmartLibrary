@@ -37,6 +37,13 @@ spec:
     - matches:
         - path:
             type: PathPrefix
+            value: /api/books
+      backendRefs:
+        - name: lending-clusterip-srv
+          port: 8080
+    - matches:
+        - path:
+            type: PathPrefix
             value: /api/lending
       backendRefs:
         - name: lending-clusterip-srv
