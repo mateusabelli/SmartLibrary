@@ -15,8 +15,16 @@
     image: development/inventoryservice
     pull_policy: never
     labels:
+      # HTTP Router
       - "traefik.http.routers.inventory.rule=PathPrefix(`/api/inventory`)"
-      - "traefik.http.services.inventory.loadbalancer.server.port=8080"
+      - "traefik.http.routers.inventory.service=inventory-rest"
+      - "traefik.http.services.inventory-rest.loadbalancer.server.port=8080"
+      
+      # gRPC Router
+      - "traefik.http.routers.inventory-grpc.rule=PathPrefix(`/rpc`)"
+      - "traefik.http.routers.inventory-grpc.service=inventory-grpc"
+      - "traefik.http.services.inventory-grpc.loadbalancer.server.port=9090"
+      - "traefik.http.services.inventory-grpc.loadbalancer.server.scheme=h2c"
     build:
       context: InventoryService
       dockerfile: Dockerfile
@@ -30,10 +38,13 @@
     image: development/lendingservice
     pull_policy: never
     labels:
+      # Books
       - "traefik.http.routers.books.rule=PathPrefix(`/api/books`)"
-      - "traefix.http.routers.books.service=lending-internal"
+      - "traefik.http.routers.books.service=lending-internal"
+      # Lending
       - "traefik.http.routers.lending.rule=PathPrefix(`/api/lending`)"
-      - "traefix.http.routers.lending.service=lending-internal"
+      - "traefik.http.routers.lending.service=lending-internal"
+      # Shared service port
       - "traefik.http.services.lending-internal.loadbalancer.server.port=8080"
     build:
       context: LendingService
