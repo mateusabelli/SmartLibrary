@@ -7,10 +7,10 @@ namespace InventoryService.Mapper;
 [Mapper]
 public partial class BookMapper
 {
-    public partial ReadBookDto MapToDto(Book book);
+    public partial BookReadDto MapToReadDto(Book book);
 
-    public partial IEnumerable<ReadBookDto> MapToEnumerableDto(IEnumerable<Book> books);
+    public partial List<BookReadDto> MapToListReadDtos(IEnumerable<Book> books);
 
     [MapperIgnoreTarget(nameof(Book.Id))]
-    public partial Book MapToBook(AddBookDto addBookDto);
+    public partial Book MapToBook(BookCreateDto bookCreateDto);
 }

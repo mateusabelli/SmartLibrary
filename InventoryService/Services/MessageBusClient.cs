@@ -34,13 +34,6 @@ public class MessageBusClient : IMessageBusClient, IDisposable
             _channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
 
             await _channel.QueueDeclareAsync(
-                queue: "inventory",
-                durable: true,
-                exclusive: false,
-                autoDelete: false,
-                cancellationToken: cancellationToken);
-
-            await _channel.QueueDeclareAsync(
                 queue: "lend",
                 durable: true,
                 exclusive: false,
@@ -57,30 +50,11 @@ public class MessageBusClient : IMessageBusClient, IDisposable
         }
     }
 
-    public async Task ProduceBookAsync(AddBookDto addBookDto)
-    {
-        if (_channel is not { IsOpen: true })
-        {
-            Console.WriteLine($"--> Message Bus connection not available");
-            return;
-        }
-
-        var message = JsonSerializer.Serialize(addBookDto);
-        var body = Encoding.UTF8.GetBytes(message);
-
-        await _channel.BasicPublishAsync(
-            exchange: string.Empty,
-            routingKey: "inventory",
-            body: body);
-
-        Console.WriteLine($"--> (inventory) Message sent: {message}");
-    }
-
     public async Task ConsumeLendAsync()
     {
         if (_channel is not { IsOpen: true })
         {
-            Console.WriteLine($"--> Message Bus connection not available");
+            Console.WriteLine("--> Message Bus connection not available");
             return;
         }
 
@@ -90,7 +64,7 @@ public class MessageBusClient : IMessageBusClient, IDisposable
             var body = ea.Body.ToArray();
             var message = Encoding.UTF8.GetString(body);
 
-            Console.WriteLine($"--> (lend) Message received: {message}");
+            Console.WriteLine($"--> Message received: {message}");
             _eventProcessor.ProcessEvent(message);
 
             return Task.CompletedTask;

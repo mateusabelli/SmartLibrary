@@ -13,33 +13,35 @@ public class InventoryController(IInventoryRepository repository, IMessageBusCli
     private readonly BookMapper _mapper = new();
 
     [HttpGet]
-    public ActionResult<IEnumerable<ReadBookDto>> GetAllBooks()
+    public ActionResult<List<BookReadDto>> GetAllBooks()
     {
-        var books = repository.GetAllBooks();
-        return Ok(_mapper.MapToEnumerableDto(books));
+        var books = repository.GetAllBooks().ToList();
+
+        if (books.Count == 0)
+            return NotFound("No data available");
+
+        return Ok(_mapper.MapToListReadDtos(books));
     }
 
-    [HttpGet("{id:int}", Name = "GetIndividualBook")]
-    public ActionResult<ReadBookDto> GetIndividualBook(int id)
+    [HttpGet("{bookId:int}", Name = "GetIndividualBook")]
+    public ActionResult<BookReadDto> GetIndividualBook(int bookId)
     {
-        var book = repository.GetBookById(id);
+        var book = repository.GetBookById(bookId);
 
         if (book is null)
-            return NotFound();
+            return NotFound($"No book available with id: {bookId}");
 
-        return Ok(_mapper.MapToDto(book));
+        return Ok(_mapper.MapToReadDto(book));
     }
 
     [HttpPost]
-    public async Task<ActionResult<ReadBookDto>> AddNewBook(AddBookDto bookDto)
+    public ActionResult<BookReadDto> AddNewBook(BookCreateDto bookCreateDto)
     {
-        var book = _mapper.MapToBook(bookDto);
+        var book = _mapper.MapToBook(bookCreateDto);
 
         repository.AddBook(book);
         repository.SaveChanges();
 
-        await messageBusClient.ProduceBookAsync(bookDto);
-
-        return CreatedAtRoute(nameof(GetIndividualBook), new { id = book.Id }, book);
+        return CreatedAtRoute(nameof(GetIndividualBook), new { bookId = book.Id }, book);
     }
 }

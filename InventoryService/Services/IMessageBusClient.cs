@@ -5,6 +5,5 @@ namespace InventoryService.Services;
 public interface IMessageBusClient
 {
     Task InitializeRabbitMq(CancellationToken cancellationToken);
-    Task ProduceBookAsync(AddBookDto addBookDto);
     Task ConsumeLendAsync();
 }
