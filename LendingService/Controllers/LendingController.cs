@@ -12,39 +12,36 @@ public class LendingController(
     IMessageBusClient messageBusClient,
     ILendingRepository lendingRepository,
     IDataClient dataClient
-    ) : ControllerBase
+) : ControllerBase
 {
     private readonly LendMapper _lendMapper = new();
 
-    [HttpGet("{id:int}", Name = "GetLendById")]
-    public ActionResult<LendReadDto> GetLendById(int id)
+    [HttpGet("{lendId:int}", Name = "GetLendById")]
+    public ActionResult<LendReadDto> GetLendById(int lendId)
     {
-        var lend = lendingRepository.GetAllLends().FirstOrDefault(l => l.Id == id);
+        var lendFound = lendingRepository.GetAllLends().FirstOrDefault(l => l.Id == lendId);
 
-        if (lend is null)
-            return NotFound();
+        if (lendFound is null)
+            return NotFound($"Unable to find lend with id: {lendId}");
 
-        return Ok(_lendMapper.MapToReadDto(lend));
+        return Ok(_lendMapper.MapToReadDto(lendFound));
     }
 
     [HttpPost]
     public async Task<ActionResult<LendReadDto>> CreateLend(LendCreateDto createDto)
     {
-        var lend = _lendMapper.MapFromCreateDto(createDto);
-
+        var newLend = _lendMapper.MapFromCreateDto(createDto);
         var inventoryStock = dataClient.CheckStock(createDto.BookId);
 
-        if (inventoryStock is not { Stock: > 0 })
-        {
-            return Ok("This book is out of stock");
-        }
+        if (inventoryStock is { Stock: <= 0 })
+            return Ok("Out of stock");
 
-        lendingRepository.CreateLend(lend);
+        lendingRepository.CreateLend(newLend);
+        await messageBusClient.ProduceLendAsync(newLend.BookId);
         lendingRepository.SaveChanges();
 
-        var dto = _lendMapper.MapToReadDto(lend);
-        await messageBusClient.ProduceLendAsync(dto.BookId);
+        var lendReadDto = _lendMapper.MapToReadDto(newLend);
 
-        return CreatedAtRoute(nameof(GetLendById), new { id = dto.Id }, dto);
+        return CreatedAtRoute(nameof(GetLendById), new { lendId = newLend.Id }, lendReadDto);
     }
 }
