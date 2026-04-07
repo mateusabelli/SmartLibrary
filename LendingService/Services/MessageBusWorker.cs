@@ -5,6 +5,5 @@ public class MessageBusWorker(IMessageBusClient messageBusClient) : BackgroundSe
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await messageBusClient.InitializeRabbitMq(stoppingToken);
-        await messageBusClient.ConsumeBookAsync();
     }
 }

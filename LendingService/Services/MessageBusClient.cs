@@ -8,14 +8,12 @@ namespace LendingService.Services;
 
 public class MessageBusClient : IDisposable, IMessageBusClient
 {
-    private readonly IEventProcessor _eventProcessor;
     private readonly ConnectionFactory _factory;
     private IConnection? _connection;
     private IChannel? _channel;
 
-    public MessageBusClient(IEventProcessor eventProcessor, IConfiguration configuration)
+    public MessageBusClient(IConfiguration configuration)
     {
-        _eventProcessor = eventProcessor;
         _factory = new ConnectionFactory
         {
             HostName = configuration["RabbitMqHostname"] ?? "localhost",
@@ -32,13 +30,6 @@ public class MessageBusClient : IDisposable, IMessageBusClient
         {
             _connection = await _factory.CreateConnectionAsync(cancellationToken);
             _channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
-
-            await _channel.QueueDeclareAsync(
-                queue: "inventory",
-                durable: true,
-                exclusive: false,
-                autoDelete: false,
-                cancellationToken: cancellationToken);
 
             await _channel.QueueDeclareAsync(
                 queue: "lend",
@@ -61,7 +52,7 @@ public class MessageBusClient : IDisposable, IMessageBusClient
     {
         if (_channel is not { IsOpen: true })
         {
-            Console.WriteLine($"--> Message Bus connection not available");
+            Console.WriteLine("--> Message Bus connection not available");
             return;
         }
 
@@ -73,30 +64,7 @@ public class MessageBusClient : IDisposable, IMessageBusClient
             routingKey: "lend",
             body: body);
 
-        Console.WriteLine($"--> (lend) Message sent: {message}");
-    }
-
-    public async Task ConsumeBookAsync()
-    {
-        if (_channel is not { IsOpen: true })
-        {
-            Console.WriteLine($"--> Message Bus connection not available");
-            return;
-        }
-
-        var consumer = new AsyncEventingBasicConsumer(_channel);
-        consumer.ReceivedAsync += (model, ea) =>
-        {
-            var body = ea.Body.ToArray();
-            var message = Encoding.UTF8.GetString(body);
-
-            Console.WriteLine($"--> (inventory) Message received: {message}");
-            _eventProcessor.ProcessEvent(message);
-
-            return Task.CompletedTask;
-        };
-
-        await _channel.BasicConsumeAsync("inventory", autoAck: true, consumer: consumer);
+        Console.WriteLine($"--> Message sent: {message}");
     }
 
     public void Dispose()

@@ -8,10 +8,8 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMem"));
 builder.Services.AddScoped<ILendingRepository, LendingRepository>();
-builder.Services.AddScoped<IBookRepository, BookRepository>();
 builder.Services.AddSingleton<IMessageBusClient, MessageBusClient>();
 builder.Services.AddHostedService<MessageBusWorker>();
-builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
 builder.Services.AddScoped<IDataClient, DataClient>();
 
 var app = builder.Build();
