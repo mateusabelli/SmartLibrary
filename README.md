@@ -56,14 +56,7 @@ The SmartLibrary API provides endpoints to manage books (inventory) and book len
 | GET    | `/inventory/{id}` | Get book by `{id}` |
 | POST   | `/inventory`      | Add new book       |
 
-#### Lending Service - Books
-
-| Method | Endpoint      | Description        |
-|--------|---------------|--------------------|
-| GET    | `/books`      | Get all books      |
-| GET    | `/books/{id}` | Get book by `{id}` |
-
-#### Lending Service - Lending
+#### Lending Service
 
 | Method | Endpoint        | Description        |
 |--------|-----------------|--------------------|
@@ -104,23 +97,10 @@ curl -X POST http://localhost/api/inventory \
 
 ### Lending Service
 
-#### Books/Get All Books
+#### Create Lend
 
 ```bash
-curl -X GET http://localhost/api/books
-```
-
-#### Books/Get Individual Book
-
-```bash
-curl -X GET http://localhost/api/books/{id}
-# Example: curl -X GET http://localhost/api/books/1
-```
-
-#### Lending/Create Lend (Borrow a Book)
-
-```bash
-Bashcurl -X POST http://localhost/api/lending \
+curl -X POST http://localhost/api/lending \
   -H "Content-Type: application/json" \
   -d '{
     "bookid": 1,
@@ -128,17 +108,17 @@ Bashcurl -X POST http://localhost/api/lending \
   }'
 ```
 
-#### Lending/Get Lend By Id
+#### Get Individual Lend
 
 ```bash
 curl -X GET http://localhost/api/lending/{id}
-# Example: curl -X GET http://localhost/api/lending/1
 ```
 
-#### Notes
+Example:
 
-- Replace `{id}` with the actual ID of the book or lending record.
-- The API currently runs **without authentication.**
+```bash
+curl -X GET http://localhost/api/lending/1
+```
 
 ## Development
 
