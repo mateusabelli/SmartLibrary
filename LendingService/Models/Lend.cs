@@ -5,14 +5,15 @@ namespace LendingService.Models;
 public class Lend
 {
     [Key]
-    public int Id { get; set; }
-    
-    [Required]
-    public int BookId { get; set; }
+    public int Id { get; init; }
 
     [Required]
+    public required int BookId { get; set; }
+
+    [Required]
+    [MaxLength(100)]
     public required string Borrower { get; set; }
 
     [Required]
-    public DateTime BorrowedAt { get; set; } = DateTime.Now;
+    public DateTime BorrowedAt { get; init; } = DateTime.Now;
 }
