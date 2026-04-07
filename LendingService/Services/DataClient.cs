@@ -1,3 +1,4 @@
+using Grpc.Core;
 using Grpc.Net.Client;
 using InventoryService;
 
@@ -20,10 +21,10 @@ public class DataClient(IConfiguration configuration) : IDataClient
             var reply = client.CheckStock(new BookStockRequest { Id = id });
             return reply;
         }
-        catch (Exception e)
+        catch (RpcException e)
         {
             Console.WriteLine($"--> Could not call gRPC server: {e.Message}");
-            return null;
+            throw;
         }
     }
 }

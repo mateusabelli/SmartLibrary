@@ -1,3 +1,4 @@
+using Grpc.Core;
 using LendingService.Data;
 using LendingService.Dtos;
 using LendingService.Mappers;
@@ -31,14 +32,25 @@ public class LendingController(
     public async Task<ActionResult<LendReadDto>> CreateLend(LendCreateDto createDto)
     {
         var newLend = _lendMapper.MapFromCreateDto(createDto);
-        var inventoryStock = dataClient.CheckStock(createDto.BookId);
 
-        if (inventoryStock is { Stock: <= 0 })
-            return Ok("Out of stock");
+        try
+        {
+            var inventoryStock = dataClient.CheckStock(createDto.BookId);
+            if (inventoryStock is { Stock: <= 0 })
+                return Ok("Out of stock");
+        }
+        catch (RpcException e)
+        {
+            if (e.StatusCode == Grpc.Core.StatusCode.NotFound)
+                return NotFound(e.Message);
+
+            return BadRequest(e.Message);
+        }
 
         lendingRepository.CreateLend(newLend);
-        await messageBusClient.ProduceLendAsync(newLend.BookId);
         lendingRepository.SaveChanges();
+
+        await messageBusClient.ProduceLendAsync(newLend.BookId);
 
         var lendReadDto = _lendMapper.MapToReadDto(newLend);
 
