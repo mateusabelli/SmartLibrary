@@ -7,8 +7,8 @@ A library distributed system built with microservices for book management and le
 - [Overview](#overview)
 - [Motivation](#motivation)
 - [Usage](#usage)
-- [System Architecture](#system-architecture) (TODO)
-- [Tech Stack](#tech-stack) (TODO)
+- [System Architecture](#system-architecture)
+- [Tech Stack](#tech-stack)
 - [Development](#development)
 - [How to Contribute](#how-to-contribute)
 - [License](#license)
@@ -119,6 +119,64 @@ Example:
 ```bash
 curl -X GET http://localhost/api/lending/1
 ```
+
+## System Architecture
+
+```mermaid
+graph TD
+    Client(["👤 Client\nInsomnia / curl"])
+
+    subgraph gw["API Gateway"]
+        direction LR
+        TK["🔀 Traefik\nDocker Compose"]
+        EV["🔀 Envoy Gateway\nKubernetes"]
+    end
+
+    subgraph inv["📦 Inventory Service"]
+        direction TB
+        I_REST["REST API\n/api/inventory"]
+        I_GRPC["gRPC Server\ninventory.proto"]
+        I_BUS["RabbitMQ Publisher\nBackgroundService"]
+        I_DB[("MSSQL\nproduction")]
+        I_MEM[("In-Memory DB\ndev / test")]
+        I_REST --- I_DB
+        I_REST -. dev .-> I_MEM
+    end
+
+    subgraph lend["📋 Lending Service"]
+        direction TB
+        L_REST["REST API\n/api/lending"]
+        L_GRPC["gRPC Client\ninventory.proto"]
+        L_SUB["RabbitMQ Subscriber\nBackgroundService"]
+        L_DB[("In-Memory DB")]
+        L_REST --- L_DB
+    end
+
+    MQ[["🐇 RabbitMQ\nMessage Bus"]]
+
+    Client -->|"HTTP /api/*"| gw
+    gw -->|"HTTP :8080"| I_REST
+    gw -->|"HTTP :8080"| L_REST
+    gw -->|"gRPC h2c :9090"| I_GRPC
+    L_GRPC -->|"sync · check stock"| I_GRPC
+    I_BUS -->|"publish events"| MQ
+    MQ -->|"subscribe"| L_SUB
+```
+
+## Tech Stack
+
+| Category      | Technology                         | Purpose                                         |
+|---------------|------------------------------------|-------------------------------------------------|
+| Language      | C# / ASP.NET Core (.NET 10)        | Core framework for both microservices           |
+| Mapping       | Riok.Mapperly                      | Source-generated object mapping                 |
+| API           | gRPC (`Grpc.AspNetCore`)           | Sync inter-service communication                |
+| Messaging     | RabbitMQ 4 (`RabbitMQ.Client` 7.x) | Async event bus via Background Services         |
+| Database      | Microsoft SQL Server               | Persistent storage (Inventory Service)          |
+| Database      | EF Core 10 + InMemory              | ORM, migrations, and lightweight dev/test store |
+| Gateway       | Traefik                            | Reverse proxy for Docker Compose                |
+| Gateway       | Envoy Gateway                      | Ingress via Kubernetes Gateway API              |
+| Containers    | Docker / Docker Compose            | Local containerized dev                         |
+| Orchestration | Kubernetes + Minikube              | Local cluster setup                             |
 
 ## Development
 
