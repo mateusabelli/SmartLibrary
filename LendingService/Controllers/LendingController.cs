@@ -20,12 +20,23 @@ public class LendingController(
     [HttpGet("{lendId:int}", Name = "GetLendById")]
     public ActionResult<LendReadDto> GetLendById(int lendId)
     {
-        var lendFound = lendingRepository.GetAllLends().FirstOrDefault(l => l.Id == lendId);
+        var lendFound = lendingRepository.GetLendById(lendId);
 
         if (lendFound is null)
             return NotFound($"Unable to find lend with id: {lendId}");
 
         return Ok(_lendMapper.MapToReadDto(lendFound));
+    }
+
+    [HttpGet]
+    public ActionResult<IEnumerable<LendReadDto>> GetAllLends()
+    {
+        var lends = lendingRepository.GetAllLends();
+
+        if (!lends.Any())
+            return NotFound("No data available");
+
+        return Ok(_lendMapper.MapToReadDtos(lends));
     }
 
     [HttpPost]
@@ -55,5 +66,19 @@ public class LendingController(
         var lendReadDto = _lendMapper.MapToReadDto(newLend);
 
         return CreatedAtRoute(nameof(GetLendById), new { lendId = newLend.Id }, lendReadDto);
+    }
+
+    [HttpPatch("{lendId:int}/close")]
+    public ActionResult CloseLend(int lendId)
+    {
+        var lendFound = lendingRepository.GetAllLends().FirstOrDefault(l => l.Id == lendId);
+
+        if (lendFound is null)
+            return NotFound($"Unable to find lend with id: {lendId}");
+
+        lendingRepository.CloseLend(lendFound);
+        lendingRepository.SaveChanges();
+
+        return NoContent();
     }
 }
