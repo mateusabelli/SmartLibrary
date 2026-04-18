@@ -7,4 +7,8 @@ public class LendReadDto
     public int BookId { get; set; }
 
     public required string Borrower { get; set; }
+    
+    public DateTime BorrowedAt { get; set; }
+    
+    public bool isClosed { get; set; }
 }

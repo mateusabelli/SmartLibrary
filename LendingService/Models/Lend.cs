@@ -14,6 +14,7 @@ public class Lend
     [MaxLength(100)]
     public required string Borrower { get; set; }
 
-    [Required]
     public DateTime BorrowedAt { get; init; } = DateTime.Now;
+
+    public bool isClosed { get; set; } = false;
 }
