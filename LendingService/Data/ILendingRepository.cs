@@ -9,4 +9,8 @@ public interface ILendingRepository
     void CreateLend(Lend lend);
 
     IQueryable<Lend> GetAllLends();
+
+    Lend? GetLendById(int id);
+    
+    void CloseLend(Lend lend);
 }

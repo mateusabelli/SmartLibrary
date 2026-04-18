@@ -19,4 +19,16 @@ public class LendingRepository(AppDbContext context) : ILendingRepository
     {
         return context.Lends;
     }
+
+    public Lend? GetLendById(int id)
+    {
+        return context.Lends.FirstOrDefault(lend => lend.Id == id);
+    }
+
+    public void CloseLend(Lend lend)
+    {
+        ArgumentNullException.ThrowIfNull(lend);
+        context.Lends.Update(lend);
+        lend.isClosed = true;
+    }
 }
