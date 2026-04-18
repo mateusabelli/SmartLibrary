@@ -4,9 +4,9 @@ namespace InventoryService.Data;
 
 public class InventoryRepository(AppDbContext context) : IInventoryRepository
 {
-    public bool SaveChanges()
+    public void SaveChanges()
     {
-        return context.SaveChanges() >= 0;
+        context.SaveChanges();
     }
 
     public IEnumerable<Book> GetAllBooks()
@@ -23,6 +23,16 @@ public class InventoryRepository(AppDbContext context) : IInventoryRepository
     {
         ArgumentNullException.ThrowIfNull(book);
         context.Books.Add(book);
+    }
+
+    public void UpdateBook(Book book)
+    {
+       context.Books.Update(book);
+    }
+
+    public void DeleteBook(Book book)
+    {
+        context.Books.Remove(book);
     }
 
     public void DecrementBookStock(int bookId)
