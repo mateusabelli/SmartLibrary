@@ -1,14 +1,14 @@
 using InventoryService.Data;
 using InventoryService.Dtos;
 using InventoryService.Mapper;
-using InventoryService.Services;
+using InventoryService.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InventoryService.Controllers;
 
 [ApiController]
 [Route("/api/[controller]")]
-public class InventoryController(IInventoryRepository repository, IMessageBusClient messageBusClient) : ControllerBase
+public class InventoryController(IInventoryRepository repository) : ControllerBase
 {
     private readonly BookMapper _mapper = new();
 
@@ -43,5 +43,38 @@ public class InventoryController(IInventoryRepository repository, IMessageBusCli
         repository.SaveChanges();
 
         return CreatedAtRoute(nameof(GetIndividualBook), new { bookId = book.Id }, book);
+    }
+
+    [HttpPut("{bookId:int}")]
+    public ActionResult<BookReadDto> UpdateBook(BookCreateDto bookCreateDto, int bookId)
+    {
+        var book = repository.GetBookById(bookId);
+
+        if (book is null)
+            return NotFound($"No book available with id: {bookId}");
+
+        repository.UpdateBook(book);
+
+        book.Title = bookCreateDto.Title;
+        book.Cost = bookCreateDto.Cost;
+        book.Stock = bookCreateDto.Stock;
+
+        repository.SaveChanges();
+
+        return Ok(_mapper.MapToReadDto(book));
+    }
+
+    [HttpDelete("{bookId:int}")]
+    public ActionResult DeleteBook(int bookId)
+    {
+        var book = repository.GetBookById(bookId);
+
+        if (book is null)
+            return NotFound($"No book available with id: {bookId}");
+
+        repository.DeleteBook(book);
+
+        repository.SaveChanges();
+        return NoContent();
     }
 }
