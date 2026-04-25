@@ -25,16 +25,6 @@ public class InventoryRepository(AppDbContext context) : IInventoryRepository
         context.Books.Add(book);
     }
 
-    public void UpdateBook(Book book)
-    {
-       context.Books.Update(book);
-    }
-
-    public void DeleteBook(Book book)
-    {
-        context.Books.Remove(book);
-    }
-
     public void DecrementBookStock(int bookId)
     {
         var book = context.Books.FirstOrDefault(b => b.Id == bookId);

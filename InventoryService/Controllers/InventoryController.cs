@@ -11,6 +11,7 @@ namespace InventoryService.Controllers;
 public class InventoryController(IInventoryRepository repository) : ControllerBase
 {
     private readonly BookMapper _mapper = new();
+    private const string NotFoundMessage = "The requested book with id: {0} does not exist or was deleted";
 
     [HttpGet]
     public ActionResult<List<BookReadDto>> GetAllBooks()
@@ -29,7 +30,7 @@ public class InventoryController(IInventoryRepository repository) : ControllerBa
         var book = repository.GetBookById(bookId);
 
         if (book is null)
-            return NotFound($"No book available with id: {bookId}");
+            return NotFound(string.Format(NotFoundMessage, bookId));
 
         return Ok(_mapper.MapToReadDto(book));
     }
@@ -51,9 +52,7 @@ public class InventoryController(IInventoryRepository repository) : ControllerBa
         var book = repository.GetBookById(bookId);
 
         if (book is null)
-            return NotFound($"No book available with id: {bookId}");
-
-        repository.UpdateBook(book);
+            return NotFound(string.Format(NotFoundMessage, bookId));
 
         book.Title = bookCreateDto.Title;
         book.Cost = bookCreateDto.Cost;
@@ -69,10 +68,10 @@ public class InventoryController(IInventoryRepository repository) : ControllerBa
     {
         var book = repository.GetBookById(bookId);
 
-        if (book is null)
-            return NotFound($"No book available with id: {bookId}");
+        if (book is null || book.deletedAt.HasValue)
+            return NotFound(string.Format(NotFoundMessage, bookId));
 
-        repository.DeleteBook(book);
+        book.deletedAt = DateTime.UtcNow;
 
         repository.SaveChanges();
         return NoContent();

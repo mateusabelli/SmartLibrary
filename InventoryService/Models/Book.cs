@@ -18,4 +18,6 @@ public class Book
 
     [Required]
     public required int Stock { get; set; }
+
+    public DateTime? deletedAt { get; set; } = null;
 }
